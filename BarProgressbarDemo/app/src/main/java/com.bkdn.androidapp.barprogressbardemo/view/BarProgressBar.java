@@ -1,4 +1,4 @@
-package com.bkdn.view;
+package com.bkdn.androidapp.barprogressbardemo;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,7 +8,9 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.graphics.SweepGradient;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -20,19 +22,19 @@ import android.widget.ProgressBar;
 import java.text.NumberFormat;
 
 /**
- * Copyright (c) 2015  Victor Gabriel de Souza
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2015 Victor Gabriel de Souza
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
  */
 
 /**
@@ -41,6 +43,12 @@ import java.text.NumberFormat;
  */
 public class BarProgressBar extends ProgressBar {
 
+    /** Minimum bar count */
+    private static final int MIN_BARS = 2;
+
+    /** Maximum bar count */
+    private static final int MAX_BARS = 40;
+
     /** Default size, in dp */
     private static final int DEFAULT_SIZE = 50;
 
@@ -48,7 +56,7 @@ public class BarProgressBar extends ProgressBar {
     private static final int INDETERMINATE_ARC_DEGREES = 270;
 
     /** Default number of bars to draw */
-    private static final int DEFAULT_BAR_COUNT = 40;
+    private static final int DEFAULT_BAR_COUNT = MAX_BARS;
 
     /** Default spacing between bars, in dp */
     private static final int DEFAULT_SPACING = 2;
@@ -99,7 +107,7 @@ public class BarProgressBar extends ProgressBar {
     private int mAngle;
 
     /** Progres color */
-    private int mProgressColor = Color.GREEN;
+    private int mProgressColor = Color.LTGRAY;
 
     /** Progress background color */
     private int mProgressBgColor = Color.DKGRAY;
@@ -127,7 +135,7 @@ public class BarProgressBar extends ProgressBar {
      * XML constructor.
      *
      * @param context The base context.
-     * @param attrs Attribute set.
+     * @param attrs   Attribute set.
      */
     public BarProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -138,7 +146,7 @@ public class BarProgressBar extends ProgressBar {
      * Initializes view attributes.
      *
      * @param attr Optional {@link android.util.AttributeSet}. If null is provided,
-     * default values will be used.
+     *             default values will be used.
      */
     private void init(AttributeSet attr) {
         mDensity = getResources().getDisplayMetrics().density;
@@ -152,13 +160,13 @@ public class BarProgressBar extends ProgressBar {
             try {
                 mSpacing = typedArray.getDimensionPixelOffset
                         (R.styleable.BarProgressBar_spacing, mSpacing);
-                mBarCount = typedArray.getInt(R.styleable.BarProgressBar_barCount, mBarCount);
                 mProgressBgColor = typedArray.getColor(R.styleable.BarProgressBar_progressBgColor,
                         mProgressBgColor);
                 mProgressColor = typedArray.getColor(R.styleable.BarProgressBar_progressColor,
                         mProgressColor);
                 mShowProgress = typedArray.getBoolean(R.styleable.BarProgressBar_showProgress,
                         mShowProgress);
+                setBarCount(typedArray.getInt(R.styleable.BarProgressBar_barCount, mBarCount));
             } finally {
                 typedArray.recycle();
             }
@@ -210,7 +218,23 @@ public class BarProgressBar extends ProgressBar {
             mPath.close();
         }
 
-        mPath.op(mHolePath, Path.Op.DIFFERENCE);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            Region holeBounds = new Region();
+            holeBounds.set((int) mBoundaries.left, (int) mBoundaries.top, (int) mBoundaries.right, (int) mBoundaries.bottom);
+            Region holeRegion = new Region();
+            holeRegion.setPath(mHolePath, holeBounds);
+
+            Region pathBounds = new Region();
+            pathBounds.set((int) mBoundaries.left, (int) mBoundaries.top, (int) mBoundaries.right, (int) mBoundaries.bottom);
+            Region pathRegion = new Region();
+            pathRegion.setPath(mPath, pathBounds);
+
+            pathRegion.op(holeRegion, Region.Op.DIFFERENCE);
+
+            mPath = pathRegion.getBoundaryPath();
+        } else {
+            mPath.op(mHolePath, Path.Op.DIFFERENCE);
+        }
 
         final int progressColorMaxAlpha = mProgressColor & 0x00FFFFFF;
         mSweepGrad = new SweepGradient(mBoundaries.centerX(), mBoundaries.centerY(),
@@ -221,6 +245,45 @@ public class BarProgressBar extends ProgressBar {
         final Rect tmpRect = new Rect();
         mPaint.getTextBounds("0", 0, 1, tmpRect);
         mFontHeight = tmpRect.height();
+    }
+
+    /**
+     * Sets the bar count to draw. Multiples of 2 works best,
+     * so the reminder of the division of <b>barCount</b> by 2 is discarded.
+     * Also, the maximum bars allowed is 40.
+     *
+     * @param barCount The number of bars to draw.
+     */
+    public void setBarCount(final int barCount) {
+        if (barCount < MIN_BARS) {
+            mBarCount = MIN_BARS;
+        } else if (barCount > MAX_BARS) {
+            mBarCount = MAX_BARS;
+        } else {
+            mBarCount = barCount - (barCount % MIN_BARS);
+        }
+
+        requestLayout();
+    }
+
+    /**
+     * Sets whether to show the progress in the center.
+     *
+     * @param showProgress True to show, false otherwise.
+     */
+    public void setShowProgress(final boolean showProgress) {
+        mShowProgress = showProgress;
+        invalidate();
+    }
+
+    /**
+     * Sets the progressbar colors.
+     * @param primary The primary color (active)
+     * @param secondary The secondary color (background, inactive)
+     */
+    public void setColors(final int primary, final int secondary){
+        mProgressColor = primary;
+        mProgressBgColor = secondary;
     }
 
     @Override
@@ -279,7 +342,7 @@ public class BarProgressBar extends ProgressBar {
         mPaint.setShader(null);
         canvas.restore();
 
-        mAngle = (int) (CIRCLE_DEGREES * getInterpolation(mAnimation));
+        mAngle = (int) (360f - (CIRCLE_DEGREES * getInterpolation(mAnimation)));
         postInvalidateDelayed(DELAY_MILLISECONDS);
     }
 
@@ -339,7 +402,7 @@ public class BarProgressBar extends ProgressBar {
      * Sets the progress.
      *
      * @param progress The progress to set.
-     * @param animate Whether to animate the change.
+     * @param animate  Whether to animate the change.
      */
     public synchronized void setProgress(final int progress, final boolean animate) {
         removeCallbacks(null);

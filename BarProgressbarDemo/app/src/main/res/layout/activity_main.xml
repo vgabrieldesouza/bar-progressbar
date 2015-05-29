@@ -1,0 +1,62 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              xmlns:bkdn="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:gravity="center_horizontal"
+              android:orientation="vertical"
+              android:padding="10dp"
+              tools:context=".MainActivity">
+
+    <com.bkdn.androidapp.barprogressbardemo.BarProgressBar
+        android:id="@+id/progressbar"
+        android:layout_marginTop="20dp"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:indeterminateOnly="false"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Set indeterminate"/>
+
+    <CheckBox
+        android:id="@+id/cb_indeterminate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Indeterminate"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Set show progress"/>
+
+    <CheckBox
+        android:id="@+id/cb_show_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show progress"
+        android:checked="true"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Progress"/>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekbar"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bar count"/>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:progress="40"
+        android:id="@+id/barcount"/>
+
+</LinearLayout>
