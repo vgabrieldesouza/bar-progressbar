@@ -1,11 +1,11 @@
 # Bar Progressbar
 
-![Screenshots]
-(https://cloud.githubusercontent.com/assets/12101144/7902780/bb0b0aa0-079b-11e5-851b-7678999f4161.png)(https://cloud.githubusercontent.com/assets/12101144/7902781/bb13314e-079b-11e5-8535-4da228807b0e.png)
+![Screenshots](https://cloud.githubusercontent.com/assets/12101144/7902811/f921d304-079c-11e5-87ed-cbb4ae7d5adf.png)
 
-Android device frames by Cyril Mottierw (http://cyrilmottier.com/2012/08/07/doing-the-photoshopping/) / CC BY 3.0 (http://creativecommons.org/licenses/by/3.0/)
+Android device frames by [Cyril Mottierw](http://cyrilmottier.com/2012/08/07/doing-the-photoshopping/) / [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/)
 
 An extension of stock Progressbar which can display progress by using bars wrapped around a circle. Supports both specific progress and indeterminate modes.
+Supported API is 1+.
 
 # How to add it to your project
 
@@ -29,7 +29,7 @@ Simply copy the `BarProgressbar.java` and `values/styleable.xml` to your project
 
 ### XML
 
-```
+```xml
  <com.bkdn.androidapp.barprogressbardemo.BarProgressBar
     android:id="@+id/progressbar"
     android:layout_marginTop="20dp"
